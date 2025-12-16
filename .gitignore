@@ -1,0 +1,33 @@
+# Docker
+*.log
+*.tmp
+*.bak
+.env
+*/.env
+.DS_Store
+*.swp
+*.swo
+
+# Docker-specific
+docker-compose.override.yml
+.dockerignore
+
+# Dependencies
+node_modules
+target
+build
+dist
+out
+
+# misc
+.idea
+.vscode
+.env
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.Trashes
+ehthumbs.db
+Thumbs.db
