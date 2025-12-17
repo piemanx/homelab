@@ -25,7 +25,7 @@ A responsive, personal dashboard for your home media server, built with React, N
 
 3.  **Run with Docker Compose:**
     ```bash
-    docker-compose up -d --build
+    docker compose up -d --build
     ```
 
 4.  **Access:**
@@ -108,12 +108,10 @@ docker run -d \
 ### 2. Deployment via Docker Compose (Using Pre-built Image)
 You can also use Docker Compose to manage the deployment of the pre-built image.
 
-#### Create `docker-compose.yml` on your server
-Create a `docker-compose.yml` file on your server (e.g., in `~/mediahub/docker-compose.yml`):
+#### Create `compose.yml` on your server
+Create a `compose.yml` file on your server (e.g., in `~/mediahub/compose.yml`):
 
 ```yaml
-version: '3.8'
-
 services:
   mediahub:
     image: ghcr.io/piemanx/homelab/mediahub:latest
@@ -134,10 +132,10 @@ echo YOUR_GITHUB_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-s
 ```
 
 #### Deploy with Docker Compose
-Navigate to the directory where you saved your `docker-compose.yml` (e.g., `cd ~/mediahub`) and run:
+Navigate to the directory where you saved your `compose.yml` (e.g., `cd ~/mediahub`) and run:
 ```bash
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```
 
 ---
