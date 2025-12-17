@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   mediahub:
     build: .
     container_name: mediahub
     ports:
-      - "7979:3000"
+      - "3000:3000"
     restart: unless-stopped
     volumes:
       # Mount config so it can be edited without rebuilding

@@ -29,7 +29,7 @@ A responsive, personal dashboard for your home media server, built with React, N
     ```
 
 4.  **Access:**
-    Open [http://localhost:7979](http://localhost:7979) in your browser.
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -100,7 +100,7 @@ docker stop mediahub || true && docker rm mediahub || true
 docker run -d \
   --name mediahub \
   --restart unless-stopped \
-  -p 7979:3000 \
+  -p 3000:3000 \
   -v ~/mediahub/config.json:/app/server/config.json \
   ghcr.io/piemanx/homelab/mediahub:latest
 ```
@@ -117,7 +117,7 @@ services:
     image: ghcr.io/piemanx/homelab/mediahub:latest
     container_name: mediahub
     ports:
-      - "7979:3000"
+      - "3000:3000"
     restart: unless-stopped
     volumes:
       # Mount config so it can be edited without rebuilding
