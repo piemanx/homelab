@@ -1,0 +1,80 @@
+name: Deploy MediaHub
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'mediahub/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/mediahub
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./mediahub
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Login to GHCR on the server
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Create project directory
+            mkdir -p ~/mediahub
+            
+            # Stop existing container
+            docker stop mediahub || true
+            docker rm mediahub || true
+            
+            # Pull new image
+            docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
+            
+            # Run new container
+            # Note: We are running with a volume for config persistence
+            docker run -d \
+              --name mediahub \
+              --restart unless-stopped \
+              -p 7979:3000 \
+              -v ~/mediahub/config.json:/app/server/config.json \
+              ghcr.io/${{ env.IMAGE_NAME }}:latest
