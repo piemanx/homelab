@@ -1,4 +1,4 @@
-name: Deploy MediaHub
+name: Build MediaHub Image
 
 on:
   push:
@@ -44,37 +44,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            # Login to GHCR on the server
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Create project directory
-            mkdir -p ~/mediahub
-            
-            # Stop existing container
-            docker stop mediahub || true
-            docker rm mediahub || true
-            
-            # Pull new image
-            docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
-            
-            # Run new container
-            # Note: We are running with a volume for config persistence
-            docker run -d \
-              --name mediahub \
-              --restart unless-stopped \
-              -p 7979:3000 \
-              -v ~/mediahub/config.json:/app/server/config.json \
-              ghcr.io/${{ env.IMAGE_NAME }}:latest

@@ -71,42 +71,38 @@ Icons are provided by [Lucide React](https://lucide.dev/icons/). You can use any
 
 ## 📦 Deployment
 
-### Method 1: Automated CI/CD (GitHub Actions)
-This repository includes a GitHub Action (`.github/workflows/deploy.yml`) that automatically builds and deploys the app to a remote server on every push to `main`.
+The GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically builds and pushes the Docker image to the **GitHub Container Registry (GHCR)** whenever changes are pushed to the `main` branch.
 
-**Prerequisites:**
-1.  **Secrets:** Add `SERVER_HOST`, `SERVER_USER`, and `SSH_KEY` to your GitHub Repository Secrets.
-2.  **Server Config:** Ensure a `config.json` exists on your server at `~/mediahub/config.json`.
+To deploy or update the application on your server, follow these steps:
 
-### Method 2: Manual Remote Deployment
-If you want to manually update the container on your server using the image built by GitHub:
+### 1. Prepare Server
+Ensure you have a `config.json` file on your server (e.g., in `~/mediahub/config.json`) containing your production credentials.
 
-1.  **SSH into your server:**
-    ```bash
-    ssh user@your-server-ip
-    ```
+### 2. Login to GHCR (First time only)
+You need a GitHub Personal Access Token (PAT) with `read:packages` permission.
+```bash
+echo YOUR_GITHUB_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+```
 
-2.  **Login to GHCR:**
-    ```bash
-    echo $CR_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
-    ```
+### 3. Pull & Run
+Run the following commands to update and restart the container:
 
-3.  **Pull & Restart:**
-    ```bash
-    # Pull latest image
-    docker pull ghcr.io/piemanx/homelab/mediahub:latest
+```bash
+# Pull the latest image
+docker pull ghcr.io/piemanx/homelab/mediahub:latest
 
-    # Remove old container
-    docker stop mediahub || true && docker rm mediahub || true
+# Remove the old container (if exists)
+docker stop mediahub || true && docker rm mediahub || true
 
-    # Start new container (mounting config)
-    docker run -d \
-      --name mediahub \
-      --restart unless-stopped \
-      -p 7979:3000 \
-      -v ~/mediahub/config.json:/app/server/config.json \
-      ghcr.io/piemanx/homelab/mediahub:latest
-    ```
+# Start the new container
+# Note: We mount the config.json from the host system
+docker run -d \
+  --name mediahub \
+  --restart unless-stopped \
+  -p 7979:3000 \
+  -v ~/mediahub/config.json:/app/server/config.json \
+  ghcr.io/piemanx/homelab/mediahub:latest
+```
 
 ---
 
