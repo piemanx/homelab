@@ -91,7 +91,11 @@ async function getQbitCookie() {
     params.append('password', config.qbittorrent.password);
     
     const resp = await axios.post(`${config.qbittorrent.url}/api/v2/auth/login`, params, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      headers: { 
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Referer': config.qbittorrent.url,
+        'Origin': config.qbittorrent.url
+      }
     });
     
     // Extract cookie from set-cookie header
@@ -114,14 +118,20 @@ app.get('/api/qbittorrent', async (req, res) => {
       qbitCookie = await getQbitCookie();
     }
 
+    const commonHeaders = {
+       Cookie: qbitCookie,
+       'Referer': config.qbittorrent.url,
+       'Origin': config.qbittorrent.url
+    };
+
     // Get Transfer Info
     const transferResp = await axios.get(`${config.qbittorrent.url}/api/v2/transfer/info`, {
-      headers: { Cookie: qbitCookie }
+      headers: commonHeaders
     });
 
     // Get Top Torrents (Active)
     const torrentsResp = await axios.get(`${config.qbittorrent.url}/api/v2/torrents/info?filter=all&sort=dlspeed&reverse=true&limit=3`, {
-      headers: { Cookie: qbitCookie }
+      headers: commonHeaders
     });
 
     res.json({
