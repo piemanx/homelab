@@ -3,9 +3,11 @@ const axios = require('axios');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const Docker = require('dockerode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 
 app.use(cors());
 app.use(express.json());
@@ -37,6 +39,43 @@ app.get('/api/status', async (req, res) => {
     }
   }));
   res.json(results);
+});
+
+// API: Docker Operations
+app.get('/api/docker/containers', async (req, res) => {
+  try {
+    const containers = await docker.listContainers({ all: true });
+    // Map to a simpler format
+    const simplified = containers.map(c => ({
+      id: c.Id,
+      name: c.Names[0].replace(/^\//, ''), // Remove leading slash
+      state: c.State,
+      status: c.Status,
+      image: c.Image
+    }));
+    res.json(simplified);
+  } catch (error) {
+    console.error("Docker list error:", error);
+    res.status(500).json({ error: "Failed to list containers. Is Docker socket mounted?" });
+  }
+});
+
+app.post('/api/docker/container/:id/:action', async (req, res) => {
+  const { id, action } = req.params;
+  const allowedActions = ['start', 'stop', 'restart'];
+  
+  if (!allowedActions.includes(action)) {
+    return res.status(400).json({ error: "Invalid action" });
+  }
+
+  try {
+    const container = docker.getContainer(id);
+    await container[action]();
+    res.json({ success: true, message: `Container ${action}ed` });
+  } catch (error) {
+    console.error(`Docker ${action} error:`, error);
+    res.status(500).json({ error: `Failed to ${action} container` });
+  }
 });
 
 // API: qBittorrent Proxy

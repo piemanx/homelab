@@ -3,6 +3,7 @@ import axios from 'axios';
 import ServiceTile from './components/ServiceTile';
 import QBitWidget from './components/QBitWidget';
 import PlexWidget from './components/PlexWidget';
+import DockerWidget from './components/DockerWidget';
 import { Server } from 'lucide-react';
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
   const [statuses, setStatuses] = useState([]);
   const [qbitData, setQbitData] = useState(null);
   const [plexData, setPlexData] = useState(null);
+  const [dockerData, setDockerData] = useState(null);
 
   useEffect(() => {
     // Fetch Config
@@ -28,7 +30,12 @@ function App() {
     const fetchWidgets = () => {
        axios.get('/api/qbittorrent').then(r => setQbitData(r.data)).catch(console.error);
        axios.get('/api/plex').then(r => setPlexData(r.data)).catch(console.error);
+       fetchDocker();
     };
+
+    const fetchDocker = () => {
+       axios.get('/api/docker/containers').then(r => setDockerData(r.data)).catch(console.error);
+    }
 
     fetchStatus();
     fetchWidgets();
@@ -40,6 +47,10 @@ function App() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const refreshDocker = () => {
+      axios.get('/api/docker/containers').then(r => setDockerData(r.data)).catch(console.error);
+  };
 
   if (!config) return <div className="min-h-screen bg-page text-white flex items-center justify-center">Loading MediaHub...</div>;
 
@@ -83,6 +94,7 @@ function App() {
           <div className="space-y-6 md:space-y-8">
              <QBitWidget data={qbitData} />
              <PlexWidget data={plexData} />
+             <DockerWidget containers={dockerData} onAction={refreshDocker} />
           </div>
         </div>
       </div>
