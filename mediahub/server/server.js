@@ -31,11 +31,13 @@ app.get('/api/config', (req, res) => {
 // API: Check Service Status
 app.get('/api/status', async (req, res) => {
   const results = await Promise.all(config.services.map(async (service) => {
+    const start = Date.now();
     try {
       await axios.get(service.url, { timeout: 2000 });
-      return { url: service.url, online: true };
+      const duration = Date.now() - start;
+      return { url: service.url, online: true, latency: duration };
     } catch (e) {
-      return { url: service.url, online: false };
+      return { url: service.url, online: false, latency: null };
     }
   }));
   res.json(results);

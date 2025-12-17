@@ -84,6 +84,7 @@ function App() {
                     key={service.url} 
                     service={service} 
                     status={status ? status.online : false} 
+                    latency={status ? status.latency : null}
                   />
                 );
               })}
