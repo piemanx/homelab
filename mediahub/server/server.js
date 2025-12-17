@@ -86,30 +86,27 @@ app.post('/api/docker/container/:id/:action', async (req, res) => {
 let qbitCookie = null;
 
 async function getQbitCookie() {
-  if (!config.qbittorrent) return null;
-  try {
-    const params = new URLSearchParams();
-    params.append('username', config.qbittorrent.username);
-    params.append('password', config.qbittorrent.password);
-    
-    const resp = await axios.post(`${config.qbittorrent.url}/api/v2/auth/login`, params, {
-      headers: { 
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Referer': config.qbittorrent.url,
-        'Origin': config.qbittorrent.url
-      }
-    });
-    
-    // Extract cookie from set-cookie header
-    const cookieHeader = resp.headers['set-cookie'];
-    if (cookieHeader) {
-      // It's usually an array, we join it just in case or pick the first one containing SID
-      return cookieHeader[0]; 
+  if (!config.qbittorrent) throw new Error("qBittorrent not configured");
+  
+  const params = new URLSearchParams();
+  params.append('username', config.qbittorrent.username);
+  params.append('password', config.qbittorrent.password);
+  
+  // Let axios throw if connection/auth fails
+  const resp = await axios.post(`${config.qbittorrent.url}/api/v2/auth/login`, params, {
+    headers: { 
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Referer': config.qbittorrent.url,
+      'Origin': config.qbittorrent.url
     }
-  } catch (e) {
-    console.error("qBit login failed:", e.message);
+  });
+  
+  // Extract cookie from set-cookie header
+  const cookieHeader = resp.headers['set-cookie'];
+  if (cookieHeader) {
+    return cookieHeader[0]; 
   }
-  return null;
+  throw new Error("No cookie returned from qBittorrent login");
 }
 
 app.get('/api/qbittorrent', async (req, res) => {
@@ -117,7 +114,9 @@ app.get('/api/qbittorrent', async (req, res) => {
 
   try {
     if (!qbitCookie) {
+      console.log("Attempting qBittorrent login...");
       qbitCookie = await getQbitCookie();
+      console.log("qBittorrent login successful.");
     }
 
     const commonHeaders = {
@@ -142,12 +141,21 @@ app.get('/api/qbittorrent', async (req, res) => {
     });
 
   } catch (e) {
-    // If unauthorized, maybe cookie expired, reset and retry once could be better logic but simple fail for now
-    if (e.response && e.response.status === 403) {
+    // If unauthorized, reset cookie
+    if (e.response && (e.response.status === 403 || e.response.status === 401)) {
+      console.log("qBittorrent session expired/invalid. Resetting cookie.");
       qbitCookie = null;
     }
+    
     console.error("qBit fetch failed:", e.message);
-    res.status(502).json({ error: "Failed to connect to qBittorrent" });
+    
+    // Return detailed error to frontend for debugging
+    res.status(502).json({ 
+      error: "Failed to connect to qBittorrent", 
+      message: e.message,
+      code: e.code,
+      details: e.response ? { status: e.response.status, data: e.response.data } : "No response from server"
+    });
   }
 });
 
