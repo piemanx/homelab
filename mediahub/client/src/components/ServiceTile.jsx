@@ -9,13 +9,16 @@ const ServiceTile = ({ service, status }) => {
       href={service.url} 
       target="_blank" 
       rel="noopener noreferrer"
-      className="flex flex-col items-center justify-center p-6 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors shadow-lg group relative"
+      className="flex flex-col items-center justify-center p-6 bg-surface rounded-2xl border border-white/5 hover:bg-surface-hover hover:border-brand/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden"
     >
-      <div className={`absolute top-3 right-3 w-3 h-3 rounded-full ${status ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500'}`} />
+      <div className={`absolute top-3 right-3 w-3 h-3 rounded-full transition-shadow duration-300 ${status ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'}`} />
       
-      <IconComponent className="w-12 h-12 text-slate-300 group-hover:text-white transition-colors mb-3" />
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      <IconComponent className="w-12 h-12 text-slate-400 group-hover:text-brand transition-colors duration-300 mb-4 relative z-10" />
       
-      <span className="font-semibold text-lg text-slate-200 group-hover:text-white">{service.name}</span>
+      <span className="font-semibold text-lg text-slate-300 group-hover:text-white transition-colors duration-300 relative z-10 text-center">{service.name}</span>
     </a>
   );
 };

@@ -41,26 +41,31 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!config) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading MediaHub...</div>;
+  if (!config) return <div className="min-h-screen bg-page text-white flex items-center justify-center">Loading MediaHub...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-200 p-8">
+    <div className="min-h-screen bg-page text-slate-200 p-4 md:p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-10 flex items-center gap-4">
-          <div className="p-3 bg-blue-600 rounded-lg shadow-lg shadow-blue-500/20">
-            <Server className="w-8 h-8 text-white" />
+        <header className="mb-8 md:mb-12 flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
+          <div className="p-4 bg-brand rounded-2xl shadow-[0_0_20px_rgba(59,130,246,0.3)] transform hover:scale-105 transition-transform duration-300">
+            <Server className="w-10 h-10 text-white" />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">MediaHub</h1>
-            <p className="text-slate-400">Home Media Dashboard</p>
+          <div className="pt-2">
+            <h1 className="text-4xl font-extrabold text-white tracking-tight mb-1 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              MediaHub
+            </h1>
+            <p className="text-slate-400 font-medium">Home Media Dashboard</p>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Main Service Grid */}
-          <div className="lg:col-span-2">
-            <h2 className="text-xl font-semibold mb-4 text-slate-300">Services</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="xl:col-span-2">
+            <h2 className="text-xl font-bold mb-6 text-slate-200 flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-brand rounded-full"></span>
+              Services
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {config.services.map((service) => {
                 const status = statuses.find(s => s.url === service.url);
                 return (
@@ -75,7 +80,7 @@ function App() {
           </div>
 
           {/* Widgets Column */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
              <QBitWidget data={qbitData} />
              <PlexWidget data={plexData} />
           </div>
