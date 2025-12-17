@@ -73,18 +73,19 @@ Icons are provided by [Lucide React](https://lucide.dev/icons/). You can use any
 
 The GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically builds and pushes the Docker image to the **GitHub Container Registry (GHCR)** whenever changes are pushed to the `main` branch.
 
-To deploy or update the application on your server, follow these steps:
+### 1. Manual Remote Deployment (Using `docker run`)
+To deploy or update the application on your server using `docker run` from the pre-built GHCR image:
 
-### 1. Prepare Server
+#### Prepare Server
 Ensure you have a `config.json` file on your server (e.g., in `~/mediahub/config.json`) containing your production credentials.
 
-### 2. Login to GHCR (First time only)
+#### Login to GHCR (First time only)
 You need a GitHub Personal Access Token (PAT) with `read:packages` permission.
 ```bash
 echo YOUR_GITHUB_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-### 3. Pull & Run
+#### Pull & Run
 Run the following commands to update and restart the container:
 
 ```bash
@@ -102,6 +103,41 @@ docker run -d \
   -p 7979:3000 \
   -v ~/mediahub/config.json:/app/server/config.json \
   ghcr.io/piemanx/homelab/mediahub:latest
+```
+
+### 2. Deployment via Docker Compose (Using Pre-built Image)
+You can also use Docker Compose to manage the deployment of the pre-built image.
+
+#### Create `docker-compose.yml` on your server
+Create a `docker-compose.yml` file on your server (e.g., in `~/mediahub/docker-compose.yml`):
+
+```yaml
+version: '3.8'
+
+services:
+  mediahub:
+    image: ghcr.io/piemanx/homelab/mediahub:latest
+    container_name: mediahub
+    ports:
+      - "7979:3000"
+    restart: unless-stopped
+    volumes:
+      # Mount config so it can be edited without rebuilding
+      - ~/mediahub/config.json:/app/server/config.json
+```
+*(Ensure `~/mediahub/config.json` exists on your server)*
+
+#### Login to GHCR (First time only)
+You need a GitHub Personal Access Token (PAT) with `read:packages` permission.
+```bash
+echo YOUR_GITHUB_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+```
+
+#### Deploy with Docker Compose
+Navigate to the directory where you saved your `docker-compose.yml` (e.g., `cd ~/mediahub`) and run:
+```bash
+docker-compose pull
+docker-compose up -d
 ```
 
 ---
