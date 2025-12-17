@@ -28,7 +28,17 @@ function App() {
 
     // Poll Widgets
     const fetchWidgets = () => {
-       axios.get('/api/qbittorrent').then(r => setQbitData(r.data)).catch(console.error);
+       // Only fetch if not previously failed (simple circuit breaker)
+       if (!qbitData?.error) {
+         axios.get('/api/qbittorrent')
+           .then(r => setQbitData(r.data))
+           .catch(err => {
+             console.error("qBit Error:", err);
+             // Set error state to stop polling and show message
+             setQbitData({ error: true }); 
+           });
+       }
+
        axios.get('/api/plex').then(r => setPlexData(r.data)).catch(console.error);
        fetchDocker();
     };

@@ -3,6 +3,16 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 
 const QBitWidget = ({ data }) => {
   if (!data) return <div className="p-6 bg-surface rounded-2xl animate-pulse h-48 border border-white/5">Loading qBittorrent...</div>;
+  
+  if (data.error) return (
+    <div className="bg-surface rounded-2xl p-6 shadow-xl border border-red-500/20 h-48 flex flex-col items-center justify-center text-red-400">
+      <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/66/QBittorrent_Logo.svg" alt="qBit" className="w-6 h-6 opacity-50"/>
+        Connection Failed
+      </h3>
+      <p className="text-sm text-center opacity-80">Check config or IP ban status.</p>
+    </div>
+  );
 
   const formatSpeed = (bytes) => {
     if (bytes === 0) return '0 B/s';
