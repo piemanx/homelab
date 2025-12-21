@@ -7,6 +7,7 @@ A responsive, personal dashboard for your home media server, built with React, N
 ## Features
 
 *   **Service Grid:** Monitor the status of your hosted services (Sonarr, Radarr, etc.) with real-time health checks.
+*   **System Monitor:** View Host CPU, RAM, and Disk usage (requires mounting host directories).
 *   **qBittorrent Widget:** View global transfer speeds and the top 3 active torrents.
 *   **Plex Widget:** See what's "Now Playing" or view "Recently Added" media.
 *   **Configuration:** Simple `config.json` file for all settings.
@@ -102,6 +103,8 @@ docker run -d \
   --restart unless-stopped \
   -p 3000:3000 \
   -v ~/mediahub/config.json:/app/server/config.json \
+  -v /proc:/proc:ro \
+  -v /sys:/sys:ro \
   ghcr.io/piemanx/homelab/mediahub:latest
 ```
 
@@ -122,6 +125,9 @@ services:
     volumes:
       # Mount config so it can be edited without rebuilding
       - ~/mediahub/config.json:/app/server/config.json
+      # Host system stats
+      - /proc:/proc:ro
+      - /sys:/sys:ro
 ```
 *(Ensure `~/mediahub/config.json` exists on your server)*
 

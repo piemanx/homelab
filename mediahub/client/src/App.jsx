@@ -4,6 +4,7 @@ import ServiceTile from './components/ServiceTile';
 import QBitWidget from './components/QBitWidget';
 import PlexWidget from './components/PlexWidget';
 import DockerWidget from './components/DockerWidget';
+import SystemWidget from './components/SystemWidget';
 import ConfigModal from './components/ConfigModal';
 import { Server, Settings } from 'lucide-react';
 
@@ -13,6 +14,7 @@ function App() {
   const [qbitData, setQbitData] = useState(null);
   const [plexData, setPlexData] = useState(null);
   const [dockerData, setDockerData] = useState(null);
+  const [systemData, setSystemData] = useState(null);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
 
   // Fetch Config function
@@ -46,6 +48,7 @@ function App() {
        }
 
        axios.get('/api/plex').then(r => setPlexData(r.data)).catch(console.error);
+       axios.get('/api/system').then(r => setSystemData(r.data)).catch(console.error);
        fetchDocker();
     };
 
@@ -119,6 +122,7 @@ function App() {
 
           {/* Widgets Column */}
           <div className="space-y-6 md:space-y-8">
+             <SystemWidget data={systemData} />
              <QBitWidget data={qbitData} />
              <PlexWidget data={plexData} />
              <DockerWidget containers={dockerData} onAction={refreshDocker} />

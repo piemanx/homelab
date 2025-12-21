@@ -4,6 +4,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const Docker = require('dockerode');
+const si = require('systeminformation');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,6 +50,34 @@ app.post('/api/config', (req, res) => {
   } catch (error) {
     console.error("Failed to save config:", error);
     res.status(500).json({ error: "Failed to save configuration" });
+  }
+});
+
+// API: System Stats
+app.get('/api/system', async (req, res) => {
+  try {
+    const [cpu, mem, fsSize] = await Promise.all([
+      si.currentLoad(),
+      si.mem(),
+      si.fsSize()
+    ]);
+
+    // Filter relevant disks (ignore loops, snaps if possible, keeping it simple for now)
+    // We'll return the mounted root or specific volumes if meaningful
+    const relevantDisks = fsSize.filter(d => d.size > 0).slice(0, 3); // Top 3 mounts
+
+    res.json({
+      cpu: cpu.currentLoad,
+      mem: {
+        total: mem.total,
+        used: mem.active,
+        percent: (mem.active / mem.total) * 100
+      },
+      disk: relevantDisks
+    });
+  } catch (error) {
+    console.error("System stats error:", error);
+    res.status(500).json({ error: "Failed to fetch system stats" });
   }
 });
 
