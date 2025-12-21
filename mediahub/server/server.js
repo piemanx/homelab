@@ -23,9 +23,33 @@ try {
   console.error("Error loading config.json:", error);
 }
 
-// API: Get Service Config (public info only)
+// API: Get Full Config
 app.get('/api/config', (req, res) => {
-  res.json({ services: config.services });
+  res.json(config);
+});
+
+// API: Update Config
+app.post('/api/config', (req, res) => {
+  try {
+    const newConfig = req.body;
+    
+    // Basic validation: ensure it's an object and has services array
+    if (!newConfig || typeof newConfig !== 'object') {
+      return res.status(400).json({ error: "Invalid config format" });
+    }
+
+    // Write to file
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(newConfig, null, 2));
+    
+    // Update in-memory
+    config = newConfig;
+    
+    console.log("Config updated via API");
+    res.json({ success: true, message: "Configuration saved" });
+  } catch (error) {
+    console.error("Failed to save config:", error);
+    res.status(500).json({ error: "Failed to save configuration" });
+  }
 });
 
 // API: Check Service Status

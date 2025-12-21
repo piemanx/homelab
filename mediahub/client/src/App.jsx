@@ -4,7 +4,8 @@ import ServiceTile from './components/ServiceTile';
 import QBitWidget from './components/QBitWidget';
 import PlexWidget from './components/PlexWidget';
 import DockerWidget from './components/DockerWidget';
-import { Server } from 'lucide-react';
+import ConfigModal from './components/ConfigModal';
+import { Server, Settings } from 'lucide-react';
 
 function App() {
   const [config, setConfig] = useState(null);
@@ -12,12 +13,17 @@ function App() {
   const [qbitData, setQbitData] = useState(null);
   const [plexData, setPlexData] = useState(null);
   const [dockerData, setDockerData] = useState(null);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
 
-  useEffect(() => {
-    // Fetch Config
+  // Fetch Config function
+  const fetchConfig = () => {
     axios.get('/api/config')
       .then(res => setConfig(res.data))
       .catch(err => console.error(err));
+  };
+
+  useEffect(() => {
+    fetchConfig();
 
     // Poll Services Status
     const fetchStatus = () => {
@@ -67,16 +73,26 @@ function App() {
   return (
     <div className="min-h-screen bg-page text-slate-200 p-4 md:p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-8 md:mb-12 flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
-          <div className="p-4 bg-brand rounded-2xl shadow-[0_0_20px_rgba(59,130,246,0.3)] transform hover:scale-105 transition-transform duration-300">
-            <Server className="w-10 h-10 text-white" />
+        <header className="mb-8 md:mb-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-brand rounded-2xl shadow-[0_0_20px_rgba(59,130,246,0.3)] transform hover:scale-105 transition-transform duration-300">
+              <Server className="w-10 h-10 text-white" />
+            </div>
+            <div className="pt-2">
+              <h1 className="text-4xl font-extrabold text-white tracking-tight mb-1 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                MediaHub
+              </h1>
+              <p className="text-slate-400 font-medium">Home Media Dashboard</p>
+            </div>
           </div>
-          <div className="pt-2">
-            <h1 className="text-4xl font-extrabold text-white tracking-tight mb-1 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-              MediaHub
-            </h1>
-            <p className="text-slate-400 font-medium">Home Media Dashboard</p>
-          </div>
+
+          <button 
+            onClick={() => setIsConfigOpen(true)}
+            className="p-3 bg-surface hover:bg-surface-hover rounded-xl border border-white/5 hover:border-white/20 transition-all text-slate-400 hover:text-white"
+            title="Configuration"
+          >
+            <Settings className="w-6 h-6" />
+          </button>
         </header>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -108,6 +124,12 @@ function App() {
              <DockerWidget containers={dockerData} onAction={refreshDocker} />
           </div>
         </div>
+
+        <ConfigModal 
+          isOpen={isConfigOpen} 
+          onClose={() => setIsConfigOpen(false)} 
+          onConfigSaved={fetchConfig}
+        />
       </div>
     </div>
   );
